@@ -1,4 +1,20 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import { siteConfig } from '@/lib/site-config';
+
+export const metadata: Metadata = {
+  title: 'CLI documentation',
+  description: `Install, authenticate with ${siteConfig.shortName}, scan your project, and sync API routes to the dashboard.`,
+  alternates: { canonical: '/cli-docs' },
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: `CLI documentation | ${siteConfig.shortName}`,
+    description: `Install, authenticate with ${siteConfig.shortName}, scan your project, and sync API routes to the dashboard.`,
+    url: '/cli-docs',
+    type: 'article',
+  },
+};
 
 const COMMANDS = [
   {
