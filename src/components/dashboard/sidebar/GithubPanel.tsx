@@ -285,7 +285,7 @@ export function GithubPanel() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden text-white p-8 lg:p-12" style={{ background: '#141414' }}>
+    <div className="flex-1 flex flex-col h-full overflow-y-auto text-white p-4 sm:p-8 lg:p-12" style={{ background: '#141414' }}>
       {loadErr && (
         <div className="shrink-0 mb-6 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 text-xs">
           <strong>Error:</strong> {loadErr}
@@ -358,12 +358,12 @@ export function GithubPanel() {
           </div>
 
           {/* TWO COLUMN CONTENT PANEL */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-0">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 shrink-0 pb-12">
             
             {/* LEFT COLUMN: Import Form & Picker */}
-            <div className="lg:col-span-7 flex flex-col min-h-0 space-y-6">
+            <div className="lg:col-span-7 flex flex-col space-y-6">
               
-              <div className="border rounded-2xl p-6 space-y-6 flex flex-col min-h-0" style={{ background: '#1A1A1A', borderColor: '#262626' }}>
+              <div className="border rounded-2xl p-6 space-y-6 flex flex-col" style={{ background: '#1A1A1A', borderColor: '#262626' }}>
                 <h3 className="text-[12px] font-bold uppercase tracking-wider text-white/40 shrink-0">
                   Import Repository
                 </h3>
@@ -419,7 +419,7 @@ export function GithubPanel() {
                 )}
 
                 {/* Grid Inputs */}
-                <div className="shrink-0 grid grid-cols-2 gap-4">
+                <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-white/40 mb-2">
                       Owner

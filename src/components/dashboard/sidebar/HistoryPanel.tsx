@@ -35,6 +35,7 @@ export function HistoryPanel() {
   const [clearHistoryOpen, setClearHistoryOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<'list' | 'details'>('list');
 
   // Pagination states for actual on-scroll backend-driven pagination
   const [loadedEntries, setLoadedEntries] = useState<DashboardHistoryEntry[]>([]);
@@ -173,10 +174,12 @@ export function HistoryPanel() {
         }}
       />
       
-      <div className="flex h-full w-full overflow-hidden text-white" style={{ background: '#141414' }}>
+      <div className="flex h-full w-full overflow-hidden text-white relative" style={{ background: '#141414' }}>
         {/* LEFT COLUMN: History Logs list */}
         <div
-          className="w-96 h-full border-r flex flex-col shrink-0"
+          className={`${
+            activeView === 'list' ? 'flex' : 'hidden'
+          } md:flex w-full md:w-96 h-full border-r flex-col shrink-0`}
           style={{ borderColor: '#262626', background: '#1A1A1A' }}
         >
           {/* Header */}
@@ -260,11 +263,15 @@ export function HistoryPanel() {
                         key={h.id}
                         role="button"
                         tabIndex={0}
-                        onClick={() => setSelectedEntryId(h.id)}
+                        onClick={() => {
+                          setSelectedEntryId(h.id);
+                          setActiveView('details');
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             setSelectedEntryId(h.id);
+                            setActiveView('details');
                           }
                         }}
                         className="rounded-xl border p-3 cursor-pointer transition-all duration-200 group relative overflow-hidden"
@@ -343,10 +350,19 @@ export function HistoryPanel() {
         </div>
 
         {/* RIGHT COLUMN: Details Pane */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden p-8 lg:p-12">
+        <div className={`${
+          activeView === 'details' ? 'flex' : 'hidden'
+        } md:flex flex-1 flex-col h-full overflow-hidden p-4 sm:p-8 lg:p-12`}>
           {!selectedEntry ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-white/5 border border-white/10 text-white/30">
+            <div className="flex-1 flex flex-col items-center justify-center text-center max-w-sm mx-auto p-4">
+              <button
+                type="button"
+                onClick={() => setActiveView('list')}
+                className="md:hidden mb-6 flex items-center gap-1.5 text-xs font-bold text-[#CFFE26] bg-[#CFFE26]/5 px-3 py-1.5 rounded-lg border border-[#CFFE26]/20"
+              >
+                ← Back to Logs
+              </button>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-white/5 border border-white/10 text-white/30 mx-auto">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                 </svg>
@@ -359,40 +375,49 @@ export function HistoryPanel() {
           ) : (
             <div className="flex-1 flex flex-col min-h-0">
               {/* Top Banner Row */}
-              <div className="shrink-0 flex items-start justify-between pb-5 border-b border-[#262626]">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <MethodBadge method={selectedEntry.method} size="md" />
-                    <h1 className="text-2xl font-mono font-bold tracking-tight text-white truncate max-w-full">
-                      {selectedEntry.pathDraft || '/'}
-                    </h1>
+              <div className="shrink-0 flex flex-col gap-4 pb-5 border-b border-[#262626]">
+                <button
+                  type="button"
+                  onClick={() => setActiveView('list')}
+                  className="md:hidden self-start flex items-center gap-1.5 text-xs font-bold text-[#CFFE26] bg-[#CFFE26]/5 px-3 py-1.5 rounded-lg border border-[#CFFE26]/20"
+                >
+                  ← Back to Logs
+                </button>
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <MethodBadge method={selectedEntry.method} size="md" />
+                      <h1 className="text-xl sm:text-2xl font-mono font-bold tracking-tight text-white truncate max-w-full">
+                        {selectedEntry.pathDraft || '/'}
+                      </h1>
+                    </div>
+                    <p className="mt-2.5 text-xs sm:text-sm font-mono text-white/40 break-all select-all flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#CFFE26] shrink-0" />
+                      {selectedEntry.resolvedUrl}
+                    </p>
                   </div>
-                  <p className="mt-2.5 text-sm font-mono text-white/40 break-all select-all flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#CFFE26] shrink-0" />
-                    {selectedEntry.resolvedUrl}
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-3 shrink-0 ml-4">
-                  <button
-                    type="button"
-                    onClick={() => replayHistoryEntry(selectedEntry)}
-                    className="px-5 py-2 rounded-lg text-[12px] font-bold text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_20px_rgba(207,254,38,0.12)]"
-                    style={{ background: '#CFFE26' }}
-                  >
-                    Open in Workspace
-                  </button>
-                  <button
-                    type="button"
-                    title="Copy Full URL"
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(selectedEntry.resolvedUrl);
-                    }}
-                    className="p-2 rounded-lg border text-white/60 hover:text-white transition-all hover:bg-white/5 active:scale-95"
-                    style={{ borderColor: '#2E2E2E' }}
-                  >
-                    <IconCopy />
-                  </button>
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0 sm:ml-4">
+                    <button
+                      type="button"
+                      onClick={() => replayHistoryEntry(selectedEntry)}
+                      className="px-4 sm:px-5 py-2 rounded-lg text-xs font-bold text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_4px_20px_rgba(207,254,38,0.12)]"
+                      style={{ background: '#CFFE26' }}
+                    >
+                      Open in Workspace
+                    </button>
+                    <button
+                      type="button"
+                      title="Copy Full URL"
+                      onClick={() => {
+                        void navigator.clipboard?.writeText(selectedEntry.resolvedUrl);
+                      }}
+                      className="p-2 rounded-lg border text-white/60 hover:text-white transition-all hover:bg-white/5 active:scale-95"
+                      style={{ borderColor: '#2E2E2E' }}
+                    >
+                      <IconCopy />
+                    </button>
+                  </div>
                 </div>
               </div>
 

@@ -21,6 +21,7 @@ export function EnvironmentPanel() {
 
   const [renamingEnvId, setRenamingEnvId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
+  const [activeView, setActiveView] = useState<'list' | 'variables'>('list');
 
   useEffect(() => {
     if (!renamingEnvId) return;
@@ -44,10 +45,12 @@ export function EnvironmentPanel() {
   const singleEnvironment = workspaceEnvironments.length <= 1;
 
   return (
-    <div className="flex h-full w-full overflow-hidden text-white" style={{ background: '#141414' }}>
+    <div className="flex h-full w-full overflow-hidden text-white relative" style={{ background: '#141414' }}>
       {/* LEFT COLUMN: Environments List */}
       <div
-        className="w-80 h-full border-r flex flex-col shrink-0"
+        className={`${
+          activeView === 'list' ? 'flex' : 'hidden'
+        } md:flex w-full md:w-80 h-full border-r flex-col shrink-0`}
         style={{ borderColor: '#262626', background: '#1A1A1A' }}
       >
         <div
@@ -92,12 +95,14 @@ export function EnvironmentPanel() {
                 onClick={() => {
                   setRenamingEnvId(null);
                   setActiveWorkspaceEnvironment(env.id);
+                  setActiveView('variables');
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     setRenamingEnvId(null);
                     setActiveWorkspaceEnvironment(env.id);
+                    setActiveView('variables');
                   }
                 }}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-150 group/env"
@@ -192,10 +197,19 @@ export function EnvironmentPanel() {
       </div>
 
       {/* RIGHT COLUMN: Variables Table & Configuration */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden p-8 lg:p-12">
+      <div className={`${
+        activeView === 'variables' ? 'flex' : 'hidden'
+      } md:flex flex-1 flex-col h-full overflow-hidden p-4 sm:p-8 lg:p-12`}>
         {!activeWorkspaceEnvironment ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-white/5 border border-white/10">
+          <div className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto p-4">
+            <button
+              type="button"
+              onClick={() => setActiveView('list')}
+              className="md:hidden mb-6 flex items-center gap-1.5 text-xs font-bold text-[#CFFE26] bg-[#CFFE26]/5 px-3 py-1.5 rounded-lg border border-[#CFFE26]/20"
+            >
+              ← Back to Environments
+            </button>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 bg-white/5 border border-white/10 mx-auto">
               <span className="text-3xl">⚙️</span>
             </div>
             <h2 className="text-lg font-bold text-white mb-2">No Active Environment</h2>
@@ -206,21 +220,30 @@ export function EnvironmentPanel() {
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             {/* Header Area */}
-            <div className="shrink-0 flex items-start justify-between pb-6 border-b border-[#262626]">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold tracking-tight text-white">
-                    {activeWorkspaceEnvironment.name} Variables
-                  </h1>
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ background: activeWorkspaceEnvironment.color }}
-                  />
+            <div className="shrink-0 flex flex-col gap-4 pb-6 border-b border-[#262626]">
+              <button
+                type="button"
+                onClick={() => setActiveView('list')}
+                className="md:hidden self-start flex items-center gap-1.5 text-xs font-bold text-[#CFFE26] bg-[#CFFE26]/5 px-3 py-1.5 rounded-lg border border-[#CFFE26]/20"
+              >
+                ← Back to Environments
+              </button>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                      {activeWorkspaceEnvironment.name} Variables
+                    </h1>
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ background: activeWorkspaceEnvironment.color }}
+                    />
+                  </div>
+                  <p className="mt-2 text-xs sm:text-sm text-white/40 leading-relaxed max-w-3xl">
+                    Configure environment variables to securely store and swap credentials or endpoints. 
+                    Reference them in your paths, headers, or parameters like <code className="text-[#CFFE26] bg-[#CFFE26]/5 px-1.5 py-0.5 rounded font-mono text-[11px]">{`{{variable_key}}`}</code>.
+                  </p>
                 </div>
-                <p className="mt-2 text-sm text-white/40 leading-relaxed max-w-3xl">
-                  Configure environment variables to securely store and swap credentials or endpoints. 
-                  Reference them in your paths, headers, or parameters like <code className="text-[#CFFE26] bg-[#CFFE26]/5 px-1.5 py-0.5 rounded font-mono text-[12px]">{`{{variable_key}}`}</code>.
-                </p>
               </div>
             </div>
 
