@@ -57,11 +57,20 @@ export const metadata: Metadata = {
     siteName: siteConfig.shortName,
     title: siteConfig.title,
     description: siteConfig.description,
+    images: [
+      {
+        url: '/images/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Rauts - Understand any backend API in seconds',
+      },
+    ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: siteConfig.title,
     description: siteConfig.description,
+    images: ['/images/og-image.png'],
   },
   formatDetection: {
     telephone: false,
