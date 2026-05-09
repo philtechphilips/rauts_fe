@@ -18,7 +18,7 @@ const STEPS = [
   },
   {
     title: 'Your dashboard updates',
-    body: 'Today we work best with NestJS, Express, and Laravel. When the job completes, new endpoints show up in your collections.',
+    body: 'First-class scans for NestJS, Express, Laravel, Fastify, Koa, Hono, Elysia, and AdonisJS—the same engine as the CLI. When the job completes, new endpoints show up in your collections.',
   },
 ] as const;
 

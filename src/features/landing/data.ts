@@ -1,6 +1,29 @@
+/** Labels returned by the scanner / synced to projects (matches backend supported stacks). */
+export const ACTIVE_SCAN_FRAMEWORKS = new Set([
+  'NestJS',
+  'Express',
+  'Laravel',
+  'Fastify',
+  'Koa',
+  'Hono',
+  'Elysia',
+  'AdonisJS',
+]);
+
+/** Marquee order: supported stacks first, roadmap stacks after. */
 export const FRAMEWORKS = [
-  'Express', 'NestJS', 'Go', 'Laravel', 'FastAPI',
-  'Hono', 'Koa', 'Fastify', 'Django', 'Rails',
+  'Express',
+  'NestJS',
+  'Fastify',
+  'Hono',
+  'Koa',
+  'Laravel',
+  'Elysia',
+  'AdonisJS',
+  'Go',
+  'FastAPI',
+  'Django',
+  'Rails',
 ];
 
 export const ENDPOINTS = [
@@ -59,7 +82,10 @@ export const HOW_IT_WORKS = [
 export const FEATURE_TILES: [string, string][] = [
   ['GitHub import', 'Connect your repository and scan in the cloud. We email you when your schema is ready.'],
   ['Fast scans', 'Scan your entire project locally or in the cloud in just a few seconds.'],
-  ['Many frameworks', 'Works out-of-the-box with Express, NestJS, Go, Django, Laravel, and more.'],
+  [
+    'Many frameworks',
+    'Works out-of-the-box with NestJS, Express, Laravel, Fastify, Koa, Hono, Elysia, and AdonisJS—plus generic Express-style routes when your stack is unknown.',
+  ],
   ['Confidence scores', 'See which endpoints are fully verified and which ones need a second look.'],
   ['Real codebases', 'Built to handle complex folder structures, messy logic, and legacy patterns.'],
 ];

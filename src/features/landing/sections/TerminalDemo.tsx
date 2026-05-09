@@ -167,7 +167,7 @@ export function TerminalDemo() {
                     {showLog2 && (
                       <div>
                         Detecting framework:{' '}
-                        <span style={{ color: 'rgba(207,254,38,0.5)' }}>Express v4.18</span>
+                        <span style={{ color: 'rgba(207,254,38,0.5)' }}>Fastify v4.x</span>
                       </div>
                     )}
                     {showLog3 && (

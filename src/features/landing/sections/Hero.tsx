@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight } from '../shared/icons';
-import { FRAMEWORKS } from '../data';
+import { ACTIVE_SCAN_FRAMEWORKS, FRAMEWORKS } from '../data';
 
 const CLI_CMD = 'npm rauts scan';
 
@@ -107,7 +107,7 @@ export function Hero() {
       >
         <div className="ticker-track">
           {[...FRAMEWORKS, ...FRAMEWORKS].map((fw, i) => {
-            const isActive = ['Express', 'NestJS', 'Laravel'].includes(fw);
+            const isActive = ACTIVE_SCAN_FRAMEWORKS.has(fw);
             return (
               <div
                 key={i}
