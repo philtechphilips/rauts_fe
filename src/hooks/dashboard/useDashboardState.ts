@@ -33,6 +33,17 @@ import {
   findEndpointSidebarLocation,
   type DashboardHistoryEntry,
 } from '@/lib/dashboard/request-history';
+
+/** Cloud dashboard → local tunnel: CLI marks unreachable upstream as 502 (or legacy status 0 + ECONNREFUSED). */
+function isLocalTunnelUnreachable(res: {
+  status: number;
+  statusText: string;
+  bodyText?: string;
+}): boolean {
+  if (res.status === 502) return true;
+  const blob = `${res.statusText}\n${res.bodyText ?? ''}`;
+  return res.status === 0 && /ECONNREFUSED|ECONNRESET/i.test(blob);
+}
 import {
   clearBackendRequestHistory,
   fetchBackendRequestHistory,
@@ -153,6 +164,41 @@ export function useDashboardState() {
   }, []);
 
   const dismissSystemAlert = useCallback(() => setSystemAlert(null), []);
+
+  const [dashboardToast, setDashboardToast] = useState<{
+    message: string;
+    tone: 'error' | 'info';
+  } | null>(null);
+  const toastClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const dismissDashboardToast = useCallback(() => {
+    if (toastClearTimerRef.current) {
+      clearTimeout(toastClearTimerRef.current);
+      toastClearTimerRef.current = null;
+    }
+    setDashboardToast(null);
+  }, []);
+
+  const showDashboardToast = useCallback((message: string, tone: 'error' | 'info' = 'info') => {
+    if (toastClearTimerRef.current) {
+      clearTimeout(toastClearTimerRef.current);
+      toastClearTimerRef.current = null;
+    }
+    setDashboardToast({ message, tone });
+    toastClearTimerRef.current = setTimeout(() => {
+      setDashboardToast(null);
+      toastClearTimerRef.current = null;
+    }, 6500);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (toastClearTimerRef.current) {
+        clearTimeout(toastClearTimerRef.current);
+        toastClearTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const requestSystemConfirm = useCallback(
     (opts: {
@@ -1270,23 +1316,44 @@ export function useDashboardState() {
           };
 
           if (resData.success && resData.response) {
-            ok = resData.response.status >= 200 && resData.response.status < 300;
-            status = resData.response.status;
-            statusText = resData.response.statusText;
-            bodyText = resData.response.bodyText;
-            headers = resData.response.headers;
+            const tunnelRes = resData.response;
+            if (isLocalTunnelUnreachable(tunnelRes)) {
+              showDashboardToast(
+                'Your local API is not running or refused the connection. Start the server on the URL and port in your environment (for example http://localhost:6000), keep `rauts local` running, then try again.',
+                'error',
+              );
+            }
+            ok = tunnelRes.status >= 200 && tunnelRes.status < 300;
+            status = tunnelRes.status;
+            statusText = tunnelRes.statusText;
+            bodyText = tunnelRes.bodyText;
+            headers = tunnelRes.headers;
           } else {
             throw new Error(resData.error || 'Failed to communicate with local agent');
           }
         } catch (e: unknown) {
           const ms = Math.round(performance.now() - t0);
+          const msg = e instanceof Error ? e.message : String(e);
+          if (/Local proxy timeout/i.test(msg)) {
+            showDashboardToast(
+              'Local tunnel timed out. Ensure `rauts local` is running and try again.',
+              'error',
+            );
+          } else if (/Failed to communicate with local agent/i.test(msg)) {
+            showDashboardToast(msg, 'error');
+          } else {
+            showDashboardToast(
+              'Could not use the local tunnel. Check your connection and that `rauts local` is running.',
+              'error',
+            );
+          }
           setLiveHttpResponse({
             ok: false,
             status: 0,
             statusText: 'Proxy Connection Error',
             ms,
             headers: [],
-            bodyText: e instanceof Error ? e.message : String(e),
+            bodyText: msg,
             parsedJson: null,
             error: 'network',
           });
@@ -1360,7 +1427,7 @@ export function useDashboardState() {
       sendBusyRef.current = false;
       setSendBusy(false);
     }
-  }, [appendRequestHistoryEntry]);
+  }, [appendRequestHistoryEntry, showDashboardToast]);
 
   const closeTab = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1490,6 +1557,10 @@ export function useDashboardState() {
     resolveSystemConfirm,
     requestSystemConfirm,
     showAppAlert,
+
+    dashboardToast,
+    showDashboardToast,
+    dismissDashboardToast,
 
     manualPathRowsByEp,
     setManualPathRowsByEp,

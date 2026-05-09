@@ -11,6 +11,7 @@ import { LoadingOverlay } from '@/components/dashboard/LoadingOverlay';
 import { ManualCreateModal } from '@/components/dashboard/modals/ManualCreateModal';
 import { DeleteCollectionModal } from '@/components/dashboard/modals/DeleteCollectionModal';
 import { SystemDialogModals } from '@/components/dashboard/modals/SystemDialogModals';
+import { DashboardToast } from '@/components/dashboard/DashboardToast';
 
 export default function DashboardPage() {
   const dashboard = useDashboardState();
@@ -47,6 +48,7 @@ export default function DashboardPage() {
         <ManualCreateModal />
         <DeleteCollectionModal />
         <SystemDialogModals />
+        <DashboardToast />
       </div>
     </DashboardProvider>
   );

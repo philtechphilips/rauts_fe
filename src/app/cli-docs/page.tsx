@@ -82,37 +82,6 @@ export default function CliDocsPage() {
             </div>
           ))}
         </section>
-
-        <section className="mt-10 rounded-xl border p-6" style={{ borderColor: '#3A3A3A', background: '#242424' }}>
-          <h3 className="mb-3 text-[18px] font-semibold">Extra commands</h3>
-          <div className="space-y-3 text-[13px]">
-            <div>
-              <p className="mb-1 font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                Check version
-              </p>
-              <code className="font-mono" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                rauts --version
-              </code>
-            </div>
-            <div>
-              <p className="mb-1 font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                Scan a specific folder
-              </p>
-              <code className="font-mono" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                rauts scan ./services/api
-              </code>
-            </div>
-            <div>
-              <p className="mb-1 font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
-                Export HTML docs file
-              </p>
-              <code className="font-mono" style={{ color: 'rgba(255,255,255,0.6)' }}>
-                rauts scan --export
-              </code>
-            </div>
-          </div>
-        </section>
-
       </div>
     </div>
   );
