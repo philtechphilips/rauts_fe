@@ -17,7 +17,8 @@ export default function AppShell({
   const isDashboard = pathname?.startsWith("/dashboard");
   const isAuthPage = pathname?.startsWith("/auth");
   const isDocsPage = pathname?.startsWith("/docs");
-  const hideGlobalHeader = isDashboard || isAuthPage || isDocsPage;
+  const isAdminPage = pathname?.startsWith("/admin");
+  const hideGlobalHeader = isDashboard || isAuthPage || isDocsPage || isAdminPage;
 
   const { isLoggedIn, user, logout } = useAuthStore();
   const [sessionExpiredToast, setSessionExpiredToast] = useState(false);
