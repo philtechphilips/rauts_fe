@@ -27,6 +27,7 @@ export interface PublishedDocsCollection {
   version: string;
   baseUrl: string;
   description: string;
+  docsPublished?: boolean;
   folders: Folder[];
 }
 
@@ -171,7 +172,15 @@ function CodeSnippet({ data, endpoint }: { data: Collection; endpoint: Endpoint 
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export function PublishedDocsViewer({ data }: { data: PublishedDocsCollection }) {
+export function PublishedDocsViewer({ 
+  data, 
+  isPreviewMode = false,
+  projectId
+}: { 
+  data: PublishedDocsCollection;
+  isPreviewMode?: boolean;
+  projectId?: string;
+}) {
   const allEndpoints = data.folders.flatMap(f => f.endpoints);
   const [selectedId,   setSelectedId]   = useState<string | 'overview'>('overview');
   const [scenarioIdx,  setScenarioIdx]  = useState(0);
@@ -209,6 +218,29 @@ export function PublishedDocsViewer({ data }: { data: PublishedDocsCollection })
   return (
     <div className="flex h-[100dvh] min-h-0 flex-col overflow-hidden"
       style={{ background: '#1A1A1A', fontFamily: 'Inter, system-ui, sans-serif', color: '#fff' }}>
+
+      {isPreviewMode && (
+        <div 
+          className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex items-center justify-between gap-4 select-none relative z-50 text-[12px]"
+        >
+          <div className="flex items-center gap-2 text-yellow-500">
+            <svg className="w-4 h-4 shrink-0 animate-pulse" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="font-semibold uppercase tracking-wider text-[9px] bg-yellow-500/20 px-2 py-0.5 rounded-md shrink-0">Preview Mode</span>
+            <span className="text-white/80 font-medium">This collection is private and not published to the public. Only you can see this preview.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/dashboard';
+            }}
+            className="px-3 py-1 rounded bg-[#CFFE26] hover:bg-[#d4e820] text-black font-bold text-[11px] transition-all hover:scale-[1.02] shrink-0"
+          >
+            Go Live / Publish
+          </button>
+        </div>
+      )}
 
       {/* ── Top nav ─────────────────────────────────────────────── */}
       <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2 sm:gap-4 sm:px-6 md:flex-nowrap md:py-0"

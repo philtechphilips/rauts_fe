@@ -166,25 +166,6 @@ function mapEndpoint(ep: ApiEndpoint): UiEndpoint {
   };
 }
 
-function sortFoldersByOrder(
-  folders: UiFolder[],
-  folderOrder: string[] | null | undefined,
-): UiFolder[] {
-  if (!folderOrder?.length) {
-    return [...folders].sort((a, b) => a.name.localeCompare(b.name));
-  }
-  const map = new Map(folders.map((f) => [f.name, f]));
-  const out: UiFolder[] = [];
-  for (const name of folderOrder) {
-    const f = map.get(name);
-    if (f) out.push(f);
-  }
-  for (const f of folders) {
-    if (!folderOrder.includes(f.name)) out.push(f);
-  }
-  return out;
-}
-
 function projectToCollection(p: ApiProject): UiCollection {
   const endpoints = p.endpoints ?? [];
   const byCategory = new Map<string, ApiEndpoint[]>();
@@ -214,7 +195,7 @@ function projectToCollection(p: ApiProject): UiCollection {
   if (folders.length === 0) {
     folders = [{ name: 'General', endpoints: [] }];
   }
-  folders = sortFoldersByOrder(folders, p.folderOrder);
+  folders.sort((a, b) => a.name.localeCompare(b.name));
   return {
     id: `col-${p.id}`,
     name: p.name,

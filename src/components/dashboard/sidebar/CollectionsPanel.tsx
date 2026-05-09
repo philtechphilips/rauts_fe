@@ -197,7 +197,7 @@ export function CollectionsPanel() {
                   const nextList = reorderByInsertBefore(collections, fromIdx, toIdx);
                   const orderedProjectIds = nextList
                     .map((c) => projectIdFromCollectionId(c.id))
-                    .filter((n): n is number => n != null);
+                    .filter((n): n is string => n != null);
                   if (orderedProjectIds.length !== nextList.length) return;
                   const prev = collections;
                   setCollections(nextList);
@@ -525,7 +525,7 @@ export function CollectionsPanel() {
                                     );
                                     const orderedEndpointIds = nextEps
                                       .map((x) => endpointNumericId(x.id))
-                                      .filter((n): n is number => n != null);
+                                      .filter((n): n is string => n != null);
                                     if (orderedEndpointIds.length !== nextEps.length) return;
                                     const prev = collections;
                                     setCollections((prevList) =>

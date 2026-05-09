@@ -39,7 +39,7 @@ export function Hero() {
         }}
       />
 
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 flex-1 flex flex-col justify-center py-20">
+      <div className="container-m relative z-10 flex-1 flex flex-col justify-center py-20">
         <div className="max-w-3xl mx-auto text-center">
           {/* Status pill */}
           <div

@@ -76,6 +76,7 @@ export function RequestPanel() {
     setUrlEncodedRowsByEp,
     authByEp,
     setAuthByEp,
+    showAppAlert,
   } = useDashboard();
 
   if (!selectedEp) return null;
@@ -419,7 +420,10 @@ export function RequestPanel() {
                   onClick={() => {
                     const result = tryFormatJson(rawBodyDraft);
                     if (!result.ok) {
-                      window.alert('Invalid JSON — fix syntax errors before formatting.');
+                      showAppAlert(
+                        'Invalid JSON — fix syntax errors before formatting.',
+                        'Format JSON',
+                      );
                       return;
                     }
                     setBodyRawDrafts((prev) => ({ ...prev, [selectedEpId]: result.formatted }));

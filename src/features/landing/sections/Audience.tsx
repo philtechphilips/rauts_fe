@@ -25,6 +25,7 @@ export function Audience() {
   return (
     <section
       ref={sectionRef}
+      id="audience"
       className="relative py-28 border-t"
       style={{ background: '#1E1E1E', borderColor: '#3A3A3A' }}
     >

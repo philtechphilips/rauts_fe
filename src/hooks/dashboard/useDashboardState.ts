@@ -73,6 +73,31 @@ export function useDashboardState() {
   const [listReady, setListReady] = useState(false);
 
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('Collections');
+
+  // Load initial tab from URL query parameter on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      const validTabs: SidebarTab[] = ['Collections', 'Environment', 'History', 'GitHub'];
+      const matched = validTabs.find((t) => t.toLowerCase() === tabParam.toLowerCase());
+      if (matched) {
+        setSidebarTab(matched);
+      }
+    }
+  }, []);
+
+  // Update URL search parameters when sidebarTab changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    const tabParam = sidebarTab.toLowerCase();
+    if (url.searchParams.get('tab') !== tabParam) {
+      url.searchParams.set('tab', tabParam);
+      window.history.pushState({}, '', url.toString());
+    }
+  }, [sidebarTab]);
   const [expandedCols, setExpandedCols] = useState<Record<string, boolean>>({});
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [selectedColId, setSelectedColId] = useState<string>('');
@@ -113,6 +138,50 @@ export function useDashboardState() {
   const [manualCreatePath, setManualCreatePath] = useState('/');
   const [manualCreateMethod, setManualCreateMethod] = useState('GET');
   const [manualCreateBusy, setManualCreateBusy] = useState(false);
+
+  const [systemAlert, setSystemAlert] = useState<{ title: string; message: string } | null>(null);
+  const [systemConfirm, setSystemConfirm] = useState<{
+    title: string;
+    message: string;
+    confirmLabel: string;
+    destructive: boolean;
+  } | null>(null);
+  const systemConfirmResolverRef = useRef<((value: boolean) => void) | null>(null);
+
+  const showAppAlert = useCallback((message: string, title = 'Notice') => {
+    setSystemAlert({ title, message });
+  }, []);
+
+  const dismissSystemAlert = useCallback(() => setSystemAlert(null), []);
+
+  const requestSystemConfirm = useCallback(
+    (opts: {
+      title: string;
+      message: string;
+      confirmLabel?: string;
+      destructive?: boolean;
+    }): Promise<boolean> => {
+      return new Promise((resolve) => {
+        const prev = systemConfirmResolverRef.current;
+        if (prev) prev(false);
+        systemConfirmResolverRef.current = resolve;
+        setSystemConfirm({
+          title: opts.title,
+          message: opts.message,
+          confirmLabel: opts.confirmLabel ?? 'Confirm',
+          destructive: opts.destructive ?? false,
+        });
+      });
+    },
+    [],
+  );
+
+  const resolveSystemConfirm = useCallback((ok: boolean) => {
+    const fn = systemConfirmResolverRef.current;
+    systemConfirmResolverRef.current = null;
+    setSystemConfirm(null);
+    fn?.(ok);
+  }, []);
 
   const [manualPathRowsByEp, setManualPathRowsByEp] = useState<Record<string, ManualParamRow[]>>({});
   const [manualQueryRowsByEp, setManualQueryRowsByEp] = useState<Record<string, ManualParamRow[]>>({});
@@ -237,7 +306,17 @@ export function useDashboardState() {
     const next = sp.toString();
     window.history.replaceState({}, '', next ? `${path}?${next}` : path);
     if (err) {
-      window.alert(`GitHub: ${decodeURIComponent(err)}`);
+      const decoded = decodeURIComponent(err);
+      const hints: Record<string, string> = {
+        invalid_state:
+          'GitHub could not verify this login step (invalid state). Try “Connect GitHub” again. If it keeps failing: restart the API after saving .env, set JWT_SECRET (and optionally GITHUB_OAUTH_STATE_SECRET), and ensure GitHub’s callback URL exactly matches GITHUB_OAUTH_CALLBACK_URL / API_PUBLIC_URL.',
+        state_expired:
+          'This GitHub login step expired. Close any extra GitHub tabs and click “Connect GitHub” again.',
+        missing_code_or_state:
+          'GitHub did not return authorization data. Click “Connect GitHub” again.',
+      };
+      const msg = hints[decoded] ?? decoded;
+      setSystemAlert({ title: 'GitHub', message: msg });
       return;
     }
     if (connected) {
@@ -291,7 +370,10 @@ export function useDashboardState() {
       }
       setDeleteConfirmCol(null);
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not delete collection');
+      setSystemAlert({
+        title: 'Could not delete',
+        message: e instanceof Error ? e.message : 'Could not delete collection',
+      });
     } finally {
       setDeletingCollectionId(null);
     }
@@ -469,7 +551,10 @@ export function useDashboardState() {
         ),
       );
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not save publish settings');
+      setSystemAlert({
+        title: 'Publish settings',
+        message: e instanceof Error ? e.message : 'Could not save publish settings',
+      });
     } finally {
       setSavingPublishDocs(false);
     }
@@ -481,7 +566,7 @@ export function useDashboardState() {
     if (id == null) return;
     const name = colNameDraft.trim();
     if (!name) {
-      window.alert('Collection name cannot be empty.');
+      setSystemAlert({ title: 'Collection', message: 'Collection name cannot be empty.' });
       return;
     }
     setSavingCollectionMeta(true);
@@ -496,7 +581,10 @@ export function useDashboardState() {
       );
       setEditingCollectionOverview(false);
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not save collection');
+      setSystemAlert({
+        title: 'Collection',
+        message: e instanceof Error ? e.message : 'Could not save collection',
+      });
     } finally {
       setSavingCollectionMeta(false);
     }
@@ -510,11 +598,11 @@ export function useDashboardState() {
     const oldName = folder.name;
     const newName = folderNameDraft.trim();
     if (!newName) {
-      window.alert('Folder name cannot be empty.');
+      setSystemAlert({ title: 'Folder', message: 'Folder name cannot be empty.' });
       return;
     }
     if (newName !== oldName && col.folders.some((f) => f.name === newName)) {
-      window.alert('Another folder already uses that name.');
+      setSystemAlert({ title: 'Folder', message: 'Another folder already uses that name.' });
       return;
     }
     const oldKey = `${col.id}-${oldName}`;
@@ -567,7 +655,10 @@ export function useDashboardState() {
       );
       setEditingFolderOverview(false);
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not save folder');
+      setSystemAlert({
+        title: 'Folder',
+        message: e instanceof Error ? e.message : 'Could not save folder',
+      });
     } finally {
       setSavingFolderOverview(false);
     }
@@ -655,12 +746,12 @@ export function useDashboardState() {
     if (!manualCreateModal || manualCreateBusy) return;
     const name = manualCreateName.trim();
     if (manualCreateModal.kind !== 'request' && !name) {
-      window.alert('Name is required.');
+      setSystemAlert({ title: 'Create', message: 'Name is required.' });
       return;
     }
     if (manualCreateModal.kind === 'request') {
       if (!name || !manualCreatePath.trim()) {
-        window.alert('Request name and path are required.');
+        setSystemAlert({ title: 'Create request', message: 'Request name and path are required.' });
         return;
       }
     }
@@ -716,7 +807,10 @@ export function useDashboardState() {
       setManualCreatePath('/');
       setManualCreateMethod('GET');
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not create');
+      setSystemAlert({
+        title: 'Create',
+        message: e instanceof Error ? e.message : 'Could not create',
+      });
     } finally {
       setManualCreateBusy(false);
     }
@@ -728,7 +822,7 @@ export function useDashboardState() {
     if (epId == null) return;
     const name = endpointNameDraft.trim();
     if (!name) {
-      window.alert('Request name cannot be empty.');
+      setSystemAlert({ title: 'Request', message: 'Request name cannot be empty.' });
       return;
     }
     setSavingEndpointName(true);
@@ -745,7 +839,10 @@ export function useDashboardState() {
       );
       setEditingEndpointName(false);
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not save request name');
+      setSystemAlert({
+        title: 'Request',
+        message: e instanceof Error ? e.message : 'Could not save request name',
+      });
     } finally {
       setSavingEndpointName(false);
     }
@@ -770,7 +867,7 @@ export function useDashboardState() {
     if (epNum == null) return;
     const pathTrim = pathDraft.trim();
     if (!pathTrim) {
-      window.alert('Path cannot be empty.');
+      setSystemAlert({ title: 'Request', message: 'Path cannot be empty.' });
       return;
     }
     const methodNorm = normalizeMethod(methodDraft);
@@ -794,7 +891,10 @@ export function useDashboardState() {
       );
       resetEndpointRequestLineDrafts();
     } catch (e: unknown) {
-      window.alert(e instanceof Error ? e.message : 'Could not save URL or method');
+      setSystemAlert({
+        title: 'Request',
+        message: e instanceof Error ? e.message : 'Could not save URL or method',
+      });
     } finally {
       setSavingEndpointRequestLine(false);
     }
@@ -864,7 +964,10 @@ export function useDashboardState() {
 
   const removeWorkspaceEnvironment = (envId: string) => {
     if (workspaceEnvironments.length <= 1) {
-      window.alert('You need at least one environment.');
+      setSystemAlert({
+        title: 'Environment',
+        message: 'You need at least one environment.',
+      });
       return;
     }
     const next = workspaceEnvironments.filter((e) => e.id !== envId);
@@ -1313,6 +1416,13 @@ export function useDashboardState() {
     manualCreateMethod,
     setManualCreateMethod,
     manualCreateBusy,
+
+    systemAlert,
+    dismissSystemAlert,
+    systemConfirm,
+    resolveSystemConfirm,
+    requestSystemConfirm,
+    showAppAlert,
 
     manualPathRowsByEp,
     setManualPathRowsByEp,

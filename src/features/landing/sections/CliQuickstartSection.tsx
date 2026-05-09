@@ -70,7 +70,7 @@ export function CliQuickstartSection() {
             </p>
           </div>
 
-          <div className={`grid grid-cols-1 gap-4 md:grid-cols-3 anim-fade-up anim-d2 ${vis}`}>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {QUICKSTART.map((item, i) => (
               <div
                 key={item.step}

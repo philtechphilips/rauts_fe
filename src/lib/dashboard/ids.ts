@@ -1,13 +1,13 @@
-export function projectIdFromCollectionId(collectionId: string): number | null {
-  const m = /^col-(\d+)$/.exec(collectionId);
-  if (!m) return null;
-  const n = Number(m[1]);
-  return Number.isFinite(n) ? n : null;
+export function projectIdFromCollectionId(collectionId: string): string | null {
+  const m = /^col-([0-9a-fA-F-]+)$/.exec(collectionId);
+  if (m) return m[1];
+  const fallback = /^col-(.+)$/.exec(collectionId);
+  return fallback ? fallback[1] : null;
 }
 
-export function endpointNumericId(endpointId: string): number | null {
-  const m = /^ep-(\d+)$/.exec(endpointId);
-  if (!m) return null;
-  const n = Number(m[1]);
-  return Number.isFinite(n) ? n : null;
+export function endpointNumericId(endpointId: string): string | null {
+  const m = /^ep-([0-9a-fA-F-]+)$/.exec(endpointId);
+  if (m) return m[1];
+  const fallback = /^ep-(.+)$/.exec(endpointId);
+  return fallback ? fallback[1] : null;
 }

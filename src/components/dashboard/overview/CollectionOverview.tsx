@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useDashboard } from '../DashboardContext';
 import { IconEdit, IconFolder, IconLayers, IconTrash } from '../icons';
 import { projectIdFromCollectionId } from '@/lib/dashboard/ids';
@@ -28,7 +29,15 @@ export function CollectionOverview() {
     setSelectedEpId,
     setSelectedFolder,
     setEditingFolderOverview,
+    resolvedBaseUrlFromEnvironment,
   } = useDashboard();
+
+  // Keep docs base URL automatically in sync with the selected environment's base URL
+  useEffect(() => {
+    if (resolvedBaseUrlFromEnvironment) {
+      setColDocsBaseUrl(resolvedBaseUrlFromEnvironment);
+    }
+  }, [resolvedBaseUrlFromEnvironment, setColDocsBaseUrl]);
 
   if (!selectedCol) return null;
   const editable = projectIdFromCollectionId(selectedCol.id) != null;
@@ -202,18 +211,31 @@ export function CollectionOverview() {
             </code>{' '}
             (no login).
           </p>
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={colDocsPublished}
-              onChange={(e) => setColDocsPublished(e.target.checked)}
-              className="rounded"
-              style={{ accentColor: '#CFFE26' }}
-            />
-            <span className="text-[13px]" style={{ color: 'rgba(255,255,255,0.78)' }}>
+          <div className="flex items-center gap-3.5 select-none py-1">
+            {/* Sliding custom switch track */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={colDocsPublished}
+              onClick={() => setColDocsPublished(!colDocsPublished)}
+              className={`w-10 h-6 rounded-full p-0.5 cursor-pointer transition-all duration-300 flex items-center shrink-0 outline-none focus:ring-1 focus:ring-[#CFFE26]/35 ${
+                colDocsPublished ? 'bg-[#CFFE26]' : 'bg-[#1A1A1A] border border-[#3A3A3A]'
+              }`}
+            >
+              <div
+                className={`w-4.5 h-4.5 rounded-full shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300 ${
+                  colDocsPublished ? 'translate-x-4.5 bg-black' : 'bg-white/40'
+                }`}
+              />
+            </button>
+            <span 
+              className="text-[13px] font-medium cursor-pointer"
+              style={{ color: 'rgba(255,255,255,0.78)' }}
+              onClick={() => setColDocsPublished(!colDocsPublished)}
+            >
               Publish documentation
             </span>
-          </label>
+          </div>
           <div>
             <label
               className="text-[11px] font-medium block mb-1.5"
@@ -223,7 +245,7 @@ export function CollectionOverview() {
             </label>
             <input
               type="url"
-              value={colDocsBaseUrl}
+              value={colDocsBaseUrl || resolvedBaseUrlFromEnvironment}
               onChange={(e) => setColDocsBaseUrl(e.target.value)}
               placeholder="https://api.myproduct.com"
               className="w-full rounded-lg border px-3 py-2 text-[13px] outline-none focus:border-[#CFFE26]/35"

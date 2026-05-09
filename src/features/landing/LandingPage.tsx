@@ -15,7 +15,7 @@ import { Footer } from './sections/Footer';
 export function LandingPage() {
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden selection:bg-[#CFFE26] selection:text-black"
+      className="relative min-h-screen overflow-x-hidden"
       style={{ background: '#1A1A1A', color: '#fff', fontFamily: 'Inter, system-ui, sans-serif' }}
     >
       <Hero />

@@ -10,6 +10,7 @@ import { StatusBar } from '@/components/dashboard/StatusBar';
 import { LoadingOverlay } from '@/components/dashboard/LoadingOverlay';
 import { ManualCreateModal } from '@/components/dashboard/modals/ManualCreateModal';
 import { DeleteCollectionModal } from '@/components/dashboard/modals/DeleteCollectionModal';
+import { SystemDialogModals } from '@/components/dashboard/modals/SystemDialogModals';
 
 export default function DashboardPage() {
   const dashboard = useDashboardState();
@@ -18,7 +19,7 @@ export default function DashboardPage() {
   return (
     <DashboardProvider value={dashboard}>
       <div
-        className="h-[100dvh] min-h-0 flex flex-col overflow-hidden text-white select-none relative"
+        className="h-[100dvh] min-h-0 flex flex-col overflow-hidden text-white relative"
         style={{ background: '#1A1A1A', fontFamily: 'Inter, system-ui, sans-serif' }}
       >
         <LoadingOverlay />
@@ -33,7 +34,7 @@ export default function DashboardPage() {
             />
           )}
           <div
-            className={`flex h-full shrink-0 transition-transform duration-200 ease-out md:relative md:z-auto md:translate-x-0 z-[50] max-md:absolute max-md:top-0 max-md:bottom-0 max-md:left-0 max-md:shadow-[8px_0_40px_rgba(0,0,0,0.45)] ${
+            className={`flex h-full shrink-0 transition-transform duration-200 ease-out md:relative md:z-[20] md:translate-x-0 z-[50] max-md:absolute max-md:top-0 max-md:bottom-0 max-md:left-0 max-md:shadow-[8px_0_40px_rgba(0,0,0,0.45)] ${
               mobileSidebarOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'
             }`}
           >
@@ -45,6 +46,7 @@ export default function DashboardPage() {
         <StatusBar />
         <ManualCreateModal />
         <DeleteCollectionModal />
+        <SystemDialogModals />
       </div>
     </DashboardProvider>
   );

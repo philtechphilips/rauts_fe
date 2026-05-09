@@ -1,8 +1,9 @@
 import { api } from '@/lib/api';
 import { normalizeHistoryEntries, type DashboardHistoryEntry } from '@/lib/dashboard/request-history';
 
-export async function fetchBackendRequestHistory(): Promise<DashboardHistoryEntry[]> {
-  const res = (await api.get('/dashboard/request-history')) as { entries?: unknown };
+export async function fetchBackendRequestHistory(limit?: number, offset?: number): Promise<DashboardHistoryEntry[]> {
+  const query = limit !== undefined && offset !== undefined ? `?limit=${limit}&offset=${offset}` : '';
+  const res = (await api.get(`/dashboard/request-history${query}`)) as { entries?: unknown };
   return normalizeHistoryEntries(res.entries);
 }
 
