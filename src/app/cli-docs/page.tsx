@@ -32,6 +32,11 @@ const COMMANDS = [
     cmd: 'rauts scan',
     desc: 'Scans the current project, enriches endpoint metadata, and syncs to dashboard.',
   },
+  {
+    title: 'Local Proxy',
+    cmd: 'rauts local',
+    desc: 'Starts the local proxy to safely forward and test localhost playground requests from the cloud dashboard.',
+  },
 ];
 
 export default function CliDocsPage() {

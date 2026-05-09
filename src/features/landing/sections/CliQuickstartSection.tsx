@@ -22,6 +22,12 @@ const QUICKSTART = [
     command: 'rauts scan',
     note: 'Runs route discovery and syncs your API to the dashboard.',
   },
+  {
+    step: '04',
+    title: 'Local Proxy',
+    command: 'rauts local',
+    note: 'Safely tunnels and executes localhost API playground requests from cloud.',
+  },
 ];
 
 export function CliQuickstartSection() {
@@ -63,18 +69,20 @@ export function CliQuickstartSection() {
               </span>
             </div>
             <h2 className="display-title mb-5" style={{ color: '#fff' }}>
-              Start in 3 commands.
+              Start in 4 commands.
             </h2>
             <p className="text-sub max-w-md" style={{ color: 'rgba(255,255,255,0.5)' }}>
-              Install, login, and scan. That is all you need to generate and sync your API map.
+              Install, login, scan, and run local proxy. Everything you need to build, sync, and test your local API map.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {QUICKSTART.map((item, i) => (
               <div
                 key={item.step}
-                className={`rounded-xl border p-6 anim-fade-up ${i === 0 ? 'anim-d1' : i === 1 ? 'anim-d2' : 'anim-d3'} ${vis}`}
+                className={`rounded-xl border p-6 anim-fade-up ${
+                  i === 0 ? 'anim-d1' : i === 1 ? 'anim-d2' : i === 2 ? 'anim-d3' : 'anim-d4'
+                } ${vis}`}
                 style={{ background: '#242424', borderColor: '#3A3A3A' }}
               >
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] mb-4" style={{ color: '#CFFE26' }}>

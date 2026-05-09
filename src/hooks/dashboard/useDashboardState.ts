@@ -1238,56 +1238,123 @@ export function useDashboardState() {
         return;
       }
 
+      const isLocalhostRequest = /https?:\/\/(localhost|127\.0\.0\.1|\[::1\])/i.test(spec.url);
+      const isCloudFrontend = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
       const t0 = performance.now();
-      let res: Response;
-      try {
-        res = await fetch(spec.url, spec.init);
-      } catch (e: unknown) {
-        const ms = Math.round(performance.now() - t0);
-        setLiveHttpResponse({
-          ok: false,
-          status: 0,
-          statusText: 'Network Error',
-          ms,
-          headers: [],
-          bodyText: e instanceof Error ? e.message : String(e),
-          parsedJson: null,
-          error: 'network',
-        });
-        pushHistory(spec.url, {
-          status: 0,
-          statusText: 'Network Error',
-          ms,
-          ok: false,
-          error: 'network',
-        });
-        return;
+      let ok = false;
+      let status = 0;
+      let statusText = '';
+      let bodyText = '';
+      let headers: { key: string; value: string }[] = [];
+
+      if (isLocalhostRequest && isCloudFrontend) {
+        try {
+          const reqBody = spec.init.body ? String(spec.init.body) : undefined;
+          const reqHeaders = Object.fromEntries(new Headers(spec.init.headers).entries());
+
+          const resData = (await api.post('/dashboard/local-requests', {
+            url: spec.url,
+            method: spec.init.method || 'GET',
+            headers: reqHeaders,
+            body: reqBody,
+          })) as {
+            success: boolean;
+            response?: {
+              status: number;
+              statusText: string;
+              headers: Array<{ key: string; value: string }>;
+              bodyText: string;
+            };
+            error?: string;
+          };
+
+          if (resData.success && resData.response) {
+            ok = resData.response.status >= 200 && resData.response.status < 300;
+            status = resData.response.status;
+            statusText = resData.response.statusText;
+            bodyText = resData.response.bodyText;
+            headers = resData.response.headers;
+          } else {
+            throw new Error(resData.error || 'Failed to communicate with local agent');
+          }
+        } catch (e: unknown) {
+          const ms = Math.round(performance.now() - t0);
+          setLiveHttpResponse({
+            ok: false,
+            status: 0,
+            statusText: 'Proxy Connection Error',
+            ms,
+            headers: [],
+            bodyText: e instanceof Error ? e.message : String(e),
+            parsedJson: null,
+            error: 'network',
+          });
+          pushHistory(spec.url, {
+            status: 0,
+            statusText: 'Proxy Connection Error',
+            ms,
+            ok: false,
+            error: 'network',
+          });
+          return;
+        }
+      } else {
+        let res: Response;
+        try {
+          res = await fetch(spec.url, spec.init);
+        } catch (e: unknown) {
+          const ms = Math.round(performance.now() - t0);
+          setLiveHttpResponse({
+            ok: false,
+            status: 0,
+            statusText: 'Network Error',
+            ms,
+            headers: [],
+            bodyText: e instanceof Error ? e.message : String(e),
+            parsedJson: null,
+            error: 'network',
+          });
+          pushHistory(spec.url, {
+            status: 0,
+            statusText: 'Network Error',
+            ms,
+            ok: false,
+            error: 'network',
+          });
+          return;
+        }
+
+        ok = res.ok;
+        status = res.status;
+        statusText = res.statusText || '';
+        bodyText = await res.text();
+        res.headers.forEach((value, key) => headers.push({ key, value }));
       }
 
       const ms = Math.round(performance.now() - t0);
-      const bodyText = await res.text();
       let parsedJson: unknown | null = null;
       try {
         parsedJson = JSON.parse(bodyText) as unknown;
       } catch {
         parsedJson = null;
       }
-      const headers: { key: string; value: string }[] = [];
-      res.headers.forEach((value, key) => headers.push({ key, value }));
+
       setLiveHttpResponse({
-        ok: res.ok,
-        status: res.status,
-        statusText: res.statusText || '',
+        ok,
+        status,
+        statusText,
         ms,
         headers,
         bodyText,
         parsedJson,
       });
+
       pushHistory(spec.url, {
-        status: res.status,
-        statusText: res.statusText || '',
+        status,
+        statusText,
         ms,
-        ok: res.ok,
+        ok,
       });
     } finally {
       sendBusyRef.current = false;
